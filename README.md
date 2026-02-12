@@ -72,9 +72,52 @@ Lint packages:
 guix lint -L . mfem mvox
 ```
 
-## Slicer integration
+## 3D Slicer integration
 
 This channel is designed to be composed with
-[guix-systole](https://github.com/SystoleOS/guix-systole) to build a 3D
-Slicer custom application with MVox as a loadable C++ module.  This integration
-is planned for a future release.
+[guix-systole](https://github.com/SystoleOS/guix-systole) to build a
+[3D Slicer](https://www.slicer.org) custom application with MVox as a
+loadable C++ module. This integration is planned for a future release.
+
+### How it will work
+
+The guix-systole channel packages 3D Slicer and its full dependency tree
+(VTK, ITK, CTK, etc.) as individual Guix packages. External loadable modules
+can be built against the installed Slicer development files and injected at
+runtime via the Guix profile.
+
+To use both channels together, combine them in
+`~/.config/guix/channels.scm`:
+
+```scheme
+(list (channel
+        (name 'systole)
+        (url "https://github.com/SystoleOS/guix-systole.git")
+        (branch "main"))
+      (channel
+        (name 'mvox)
+        (url "https://github.com/benzwick/guix-mvox")
+        (branch "main"))
+      %default-channels)
+```
+
+A `slicer-mvox` package would build the MVox loadable module against Slicer's
+installed development files (using `-DSlicer_DIR`), following the pattern
+established by
+[slicer-openigtlink](https://github.com/SystoleOS/guix-systole/blob/main/systole/systole/packages/openigtlink.scm).
+The built `.so` files are symlinked into `lib/Slicer-5.8/SlicerModules/`,
+where the Slicer wrapper picks them up automatically.
+
+Installing would then be:
+
+```sh
+guix install slicer-5.8 slicer-mvox
+```
+
+### Current status
+
+The guix-systole extension infrastructure is still being developed
+(see [guix-systole#72](https://github.com/SystoleOS/guix-systole/issues/72),
+[#73](https://github.com/SystoleOS/guix-systole/issues/73),
+[#98](https://github.com/SystoleOS/guix-systole/pull/98)).
+The `slicer-mvox` package will be added once the extension API is finalized.
