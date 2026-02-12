@@ -1,5 +1,9 @@
 # mvox Guix Channel
 
+[![Guix Install (local)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml)
+[![Guix Install (channel)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml)
+[![Guix Build from Source](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build-source.yml)
+
 This [Guix channel](https://guix.gnu.org/manual/en/html_node/Channels.html)
 provides packages for [MFEM](https://mfem.org) and
 [mvox](https://github.com/benzwick/mvox).
