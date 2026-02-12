@@ -9,8 +9,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 120
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-latest]
 
     steps:
     - name: Get cache key
@@ -48,8 +51,8 @@ jobs:
           /gnu/store
           /var/guix
           ~/.cache/guix
-        key: guix-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
-        restore-keys: guix-${{ steps.cache-key.outputs.week }}-
+        key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
+        restore-keys: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-
 
     - name: Start Guix daemon
       run: |
@@ -98,4 +101,4 @@ jobs:
           /gnu/store
           /var/guix
           ~/.cache/guix
-        key: guix-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
+        key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
