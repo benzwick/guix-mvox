@@ -21,7 +21,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/guix
-        key: guix-${{ hashFiles('guix/mvox/packages/*.scm') }}-week-${{ github.run_number }}
+        key: guix-${{ hashFiles('mvox/packages/*.scm') }}-${{ github.run_number }}
         restore-keys: guix-
 
     - name: Install Guix
@@ -57,27 +57,33 @@ jobs:
 
     - name: Lint packages
       continue-on-error: true
-      run: guix lint -L guix mfem mvox
+      run: guix lint -L . mfem mvox
 
     - name: Build MFEM
-      run: guix build -L guix mfem
+      run: guix build -L . mfem
 
     - name: Build mvox
-      run: guix build -L guix mvox
+      run: guix build -L . mvox
 
     - name: Smoke test (from store)
-      run: $(guix build -L guix mvox)/bin/mvox --help
+      run: $(guix build -L . mvox)/bin/mvox --help
 
     - name: Install mvox
-      run: guix install -L guix mvox
+      run: guix install -L . mvox
 
     - name: Smoke test (installed)
       run: mvox --help
 
+    - name: Clone mvox for tests
+      uses: actions/checkout@v4
+      with:
+        repository: benzwick/mvox
+        path: mvox-src
+
     - name: Test boxmesh
-      working-directory: examples
+      working-directory: mvox-src/examples
       run: bash boxmesh.sh
 
     - name: Test brain-tensors
-      working-directory: examples
+      working-directory: mvox-src/examples
       run: bash brain-tensors.sh

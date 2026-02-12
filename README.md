@@ -20,7 +20,7 @@ Add the following to `~/.config/guix/channels.scm`:
 ```scheme
 (cons (channel
        (name 'mvox)
-       (url "https://github.com/benzwick/mvox")
+       (url "https://github.com/benzwick/guix-mvox")
        (branch "master")
        (introduction
         ;; TODO: add channel introduction for authentication
@@ -58,14 +58,14 @@ mvox --help
 Build from a local checkout without adding the channel:
 
 ```sh
-guix build -L guix mfem
-guix build -L guix mvox
+guix build -L . mfem
+guix build -L . mvox
 ```
 
 Lint packages:
 
 ```sh
-guix lint -L guix mfem mvox
+guix lint -L . mfem mvox
 ```
 
 ## Slicer integration

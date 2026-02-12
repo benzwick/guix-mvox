@@ -6,8 +6,7 @@
   #:use-module ((guix licenses) #:prefix license:)
   #:use-module (gnu packages compression)
   #:use-module (gnu packages image-processing)
-  #:use-module (mvox packages mfem)
-  #:use-module (guix utils))
+  #:use-module (mvox packages mfem))
 
 (define-public mvox
   (package
@@ -20,13 +19,9 @@
              (url "https://github.com/benzwick/mvox")
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
-       (snippet
-        ;; Remove the Guix channel directory so the source hash does not
-        ;; depend on the package definitions (avoids chicken-and-egg when
-        ;; tagging releases).
-        #~(delete-file-recursively "guix"))
        (sha256
-        (base32 "1gka4nlg131dnrya6xzlzjpjd5c1crsgwvgzapls82jfg6pdh0gd"))))
+        ;; TODO: update after v1.0.0 tag is stable
+        (base32 "0000000000000000000000000000000000000000000000000000"))))
     (build-system cmake-build-system)
     (arguments
      (list
