@@ -1,4 +1,4 @@
-name: Guix
+name: Guix Build from Source
 
 on:
   push:
@@ -17,12 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Guix cache
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/guix
-        key: guix-${{ hashFiles('mvox/packages/*.scm') }}-${{ github.run_number }}
-        restore-keys: guix-
+    - name: Get cache key
+      id: cache-key
+      run: echo "week=$(date +%G-W%V)" >> $GITHUB_OUTPUT
 
     - name: Install Guix
       run: |
@@ -43,47 +40,58 @@ jobs:
           sudo /var/guix/profiles/per-user/root/current-guix/bin/guix archive --authorize < "$f"
         done
 
-        # Start daemon directly (bypass systemd)
-        sudo /var/guix/profiles/per-user/root/current-guix/bin/guix-daemon \
-          --build-users-group=guixbuild --disable-chroot &
-
         # Add guix to PATH
         export GUIX_PATH=/var/guix/profiles/per-user/root/current-guix
         echo "$GUIX_PATH/bin" >> $GITHUB_PATH
         echo "LANG=en_US.utf8" >> $GITHUB_ENV
 
+    - name: Restore Guix store cache
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          /gnu/store
+          /var/guix
+          ~/.cache/guix
+        key: guix-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
+        restore-keys: guix-${{ steps.cache-key.outputs.week }}-
+
+    - name: Start Guix daemon
+      run: |
+        sudo /var/guix/profiles/per-user/root/current-guix/bin/guix-daemon \
+          --build-users-group=guixbuild --disable-chroot &
+
     - name: Update Guix
       run: sudo -i /var/guix/profiles/per-user/root/current-guix/bin/guix pull
 
-    - name: Lint packages
-      continue-on-error: true
-      run: guix lint -L . mfem mvox
-
-    - name: Build MFEM
-      run: guix build -L . mfem
-
-    - name: Build mvox
-      run: guix build -L . mvox
-
-    - name: Smoke test (from store)
-      run: $(guix build -L . mvox)/bin/mvox --help
-
-    - name: Install mvox
-      run: guix install -L . mvox
-
-    - name: Smoke test (installed)
-      run: mvox --help
-
-    - name: Clone mvox for tests
+    - name: Clone mvox
       uses: actions/checkout@v4
       with:
         repository: benzwick/mvox
         path: mvox-src
 
+    - name: Build mvox from source
+      run: |
+        guix shell -D -L . mvox -- bash -c "\
+          mkdir -p build && \
+          cd build && \
+          cmake ../mvox-src && \
+          make -j$(nproc)"
+
+    - name: Smoke test
+      run: guix shell -D -L . mvox -- ./build/mvox --help
+
     - name: Test boxmesh
-      working-directory: mvox-src/examples
-      run: bash boxmesh.sh
+      run: guix shell -D -L . mvox -- bash -c "cd mvox-src/examples && bash boxmesh.sh"
 
     - name: Test brain-tensors
-      working-directory: mvox-src/examples
-      run: bash brain-tensors.sh
+      run: guix shell -D -L . mvox -- bash -c "cd mvox-src/examples && bash brain-tensors.sh"
+
+    - name: Save Guix store cache
+      uses: actions/cache/save@v4
+      if: always()
+      with:
+        path: |
+          /gnu/store
+          /var/guix
+          ~/.cache/guix
+        key: guix-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
