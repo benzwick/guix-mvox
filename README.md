@@ -21,7 +21,7 @@ Add the following to `~/.config/guix/channels.scm`:
 (cons (channel
        (name 'mvox)
        (url "https://github.com/benzwick/guix-mvox")
-       (branch "master")
+       (branch "main")
        (introduction
         ;; TODO: add channel introduction for authentication
         ))
