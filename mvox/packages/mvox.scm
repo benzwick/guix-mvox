@@ -20,8 +20,7 @@
              (commit (string-append "v" version))))
        (file-name (git-file-name name version))
        (sha256
-        ;; TODO: update after v1.0.0 tag is stable
-        (base32 "0000000000000000000000000000000000000000000000000000"))))
+        (base32 "1rdnlig5ibzsznyhzf9ba1fy4xiv4nkx1l6cy2qlav30a9azh9fz"))))
     (build-system cmake-build-system)
     (arguments
      (list
