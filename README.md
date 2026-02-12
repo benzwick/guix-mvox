@@ -75,6 +75,6 @@ guix lint -L . mfem mvox
 ## Slicer integration
 
 This channel is designed to be composed with
-[guix-systole](https://codeberg.org/guix-systole/guix-systole) to build a 3D
+[guix-systole](https://github.com/SystoleOS/guix-systole) to build a 3D
 Slicer custom application with MVox as a loadable C++ module.  This integration
 is planned for a future release.
