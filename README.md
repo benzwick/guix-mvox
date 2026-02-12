@@ -1,4 +1,4 @@
-# mvox Guix Channel
+# MVox Guix Channel
 
 [![Guix Install (local)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-local.yml)
 [![Guix Install (channel)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-install-channel.yml)
@@ -6,7 +6,7 @@
 
 This [Guix channel](https://guix.gnu.org/manual/en/html_node/Channels.html)
 provides packages for [MFEM](https://mfem.org) and
-[mvox](https://github.com/benzwick/mvox).
+[MVox](https://github.com/benzwick/mvox).
 
 ## Packages
 
@@ -45,7 +45,7 @@ guix build mfem
 guix build mvox
 ```
 
-### Install mvox
+### Install MVox
 
 ```sh
 guix install mvox
@@ -76,5 +76,5 @@ guix lint -L . mfem mvox
 
 This channel is designed to be composed with
 [guix-systole](https://codeberg.org/guix-systole/guix-systole) to build a 3D
-Slicer custom application with mvox as a loadable C++ module.  This integration
+Slicer custom application with MVox as a loadable C++ module.  This integration
 is planned for a future release.
