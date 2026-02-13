@@ -65,8 +65,10 @@ jobs:
     # files in the runner's home. Use $(which guix) to pass the full
     # path since sudo resets PATH.
     # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
+    # Guix migrated from git.guix.gnu.org to Codeberg.
+    # https://guix.gnu.org/blog/2025/migrating-to-codeberg/
     - name: Update Guix
-      run: sudo -H "$(which guix)" pull
+      run: sudo -H "$(which guix)" pull --url=https://codeberg.org/guix/guix.git
 
     # sudo guix pull may leave root-owned files in ~/.config/guix/
     # despite -H. Remove them so the runner user can write channels.scm.
@@ -75,11 +77,15 @@ jobs:
         sudo rm -rf ~/.config/guix 2>/dev/null || true
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
-        (cons (channel
-               (name 'mvox)
-               (url "https://github.com/benzwick/guix-mvox")
-               (branch "main"))
-              %default-channels)
+        (cons* (channel
+                 (name 'guix)
+                 (url "https://codeberg.org/guix/guix.git")
+                 (branch "main"))
+               (channel
+                 (name 'mvox)
+                 (url "https://github.com/benzwick/guix-mvox")
+                 (branch "main"))
+               %default-channels)
         EOF
 
     - name: Pull
