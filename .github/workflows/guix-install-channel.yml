@@ -99,6 +99,22 @@ jobs:
       working-directory: mvox-src/examples
       run: bash brain-tensors.sh
 
+    - name: Collect Guix build logs
+      if: always()
+      run: |
+        mkdir -p guix-build-logs
+        for f in /var/log/guix/drvs/*/*; do
+          sudo cp "$f" guix-build-logs/ || true
+        done
+        gunzip guix-build-logs/*.gz 2>/dev/null || true
+
+    - name: Upload Guix build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: guix-build-logs-${{ matrix.os }}
+        path: guix-build-logs/
+
     - name: Stop Guix daemon
       if: always()
       run: sudo systemctl stop guix-daemon
