@@ -78,8 +78,12 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
+    # guix shell -D sets GUIX_ENVIRONMENT to the profile containing all
+    # build inputs, but does not set CMAKE_PREFIX_PATH (cmake defines it
+    # as a native-search-path, which only activates during guix build).
+    # Pass it explicitly so cmake can find ITK and MFEM.
     - name: Configure mvox
-      run: guix shell -D -L . mvox -- cmake -B build -S mvox-src
+      run: guix shell -D -L . mvox -- bash -c 'cmake -B build -S mvox-src -DCMAKE_PREFIX_PATH="$GUIX_ENVIRONMENT"'
 
     - name: Build mvox
       run: guix shell -D -L . mvox -- make -C build -j$(nproc)
