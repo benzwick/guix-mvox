@@ -61,11 +61,12 @@ jobs:
 
     # The tarball ships a potentially old Guix; update the daemon so it
     # can build current packages and compile channel modules.
-    # Use sudo -i (login shell) so guix pull writes to /root and does
-    # not create root-owned files in $HOME.
+    # Use -H to set HOME=/root so guix pull does not create root-owned
+    # files in the runner's home. Use $(which guix) to pass the full
+    # path since sudo resets PATH.
     # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
     - name: Update Guix
-      run: sudo -i guix pull
+      run: sudo -H "$(which guix)" pull
 
     - name: Configure channel
       run: |
