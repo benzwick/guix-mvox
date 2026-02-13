@@ -75,6 +75,9 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
+    - name: Debug guix shell environment
+      run: guix shell -D -L . mvox -- env | sort | grep -iE 'CMAKE|GUIX|^PATH='
+
     # guix shell -D sets GUIX_ENVIRONMENT to the profile containing all
     # build inputs, but does not set CMAKE_PREFIX_PATH (cmake defines it
     # as a native-search-path, which only activates during guix build).
