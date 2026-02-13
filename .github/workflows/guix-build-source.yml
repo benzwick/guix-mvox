@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       matrix:
-        os: [ubuntu-22.04, ubuntu-latest]
+        os: [ubuntu-24.04, ubuntu-latest]
 
     steps:
     - uses: actions/checkout@v4
@@ -24,28 +24,16 @@ jobs:
       id: cache-key
       run: echo "week=$(date +%G-W%V)" >> $GITHUB_OUTPUT
 
+    # Install Guix using the official install script, which sets up an
+    # unprivileged daemon via systemd (no build users or chroot needed).
+    # https://guix.gnu.org/manual/1.5.0/en/html_node/Binary-Installation.html
+    # https://hpc.guix.info/blog/2025/03/build-daemon-drops-its-privileges/
     - name: Install Guix
       run: |
-        # Download and extract Guix binary
-        wget -qO guix-binary.tar.xz "https://ci.guix.gnu.org/search/latest/archive?query=spec:tarball+status:success+system:x86_64-linux+guix-binary.tar.xz"
-        sudo tar xf guix-binary.tar.xz -C / --no-overwrite-dir
-
-        # Create build users
-        sudo groupadd --system guixbuild
-        for i in $(seq -w 1 10); do
-          sudo useradd -g guixbuild -G guixbuild -d /var/empty \
-            -s "$(which nologin)" -c "Guix build user $i" \
-            --system "guixbuilder${i}"
-        done
-
-        # Authorize substitutes
-        for f in /var/guix/profiles/per-user/root/current-guix/share/guix/*.pub; do
-          sudo /var/guix/profiles/per-user/root/current-guix/bin/guix archive --authorize < "$f"
-        done
-
-        # Add guix to PATH
-        export GUIX_PATH=/var/guix/profiles/per-user/root/current-guix
-        echo "$GUIX_PATH/bin" >> $GITHUB_PATH
+        wget -qO /tmp/guix-install.sh https://guix.gnu.org/install.sh
+        chmod +x /tmp/guix-install.sh
+        yes | sudo /tmp/guix-install.sh
+        echo "/var/guix/profiles/per-user/root/current-guix/bin" >> $GITHUB_PATH
         echo "LANG=en_US.utf8" >> $GITHUB_ENV
 
     - name: Restore Guix store cache
@@ -58,12 +46,7 @@ jobs:
         key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
         restore-keys: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-
 
-    - name: Start Guix daemon
-      run: |
-        sudo /var/guix/profiles/per-user/root/current-guix/bin/guix-daemon \
-          --build-users-group=guixbuild --disable-chroot &
-
-    # The tarball ships a potentially old Guix; update to latest so
+    # The install script ships a release tarball; update to latest so
     # it can build current packages and compile channel modules.
     # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
     # Guix migrated from git.guix.gnu.org to Codeberg; the new URL
@@ -92,6 +75,9 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
+    - name: Debug guix shell environment
+      run: guix shell -D -L . mvox -- env | sort | grep -iE 'CMAKE|GUIX|^PATH='
+
     # guix shell -D sets GUIX_ENVIRONMENT to the profile containing all
     # build inputs, but does not set CMAKE_PREFIX_PATH (cmake defines it
     # as a native-search-path, which only activates during guix build).
@@ -115,7 +101,7 @@ jobs:
 
     - name: Stop Guix daemon
       if: always()
-      run: sudo pkill guix-daemon || true
+      run: sudo systemctl stop guix-daemon
 
     - name: Save Guix store cache
       uses: actions/cache/save@v4
