@@ -68,8 +68,11 @@ jobs:
     - name: Update Guix
       run: sudo -H "$(which guix)" pull
 
+    # sudo guix pull may leave root-owned files in ~/.config/guix/
+    # despite -H. Remove them so the runner user can write channels.scm.
     - name: Configure channel
       run: |
+        sudo rm -rf ~/.config/guix 2>/dev/null || true
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
         (cons (channel
