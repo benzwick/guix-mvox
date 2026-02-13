@@ -26,25 +26,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Get cache key
-      id: cache-key
-      run: echo "week=$(date +%G-W%V)" >> $GITHUB_OUTPUT
-
     - name: Install Guix
       run: |
         sudo apt-get update
         sudo apt-get install -y guix
         echo "LANG=en_US.utf8" >> $GITHUB_ENV
-
-    - name: Restore Guix store cache
-      uses: actions/cache/restore@v4
-      with:
-        path: |
-          /gnu/store
-          /var/guix
-          ~/.cache/guix
-        key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
-        restore-keys: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-
 
     # Guix migrated from git.guix.gnu.org to Codeberg; the new URL
     # requires an explicit introduction for channel authentication.
@@ -135,13 +121,3 @@ jobs:
     - name: Stop Guix daemon
       if: always()
       run: sudo systemctl stop guix-daemon
-
-    - name: Save Guix store cache
-      uses: actions/cache/save@v4
-      if: always()
-      with:
-        path: |
-          /gnu/store
-          /var/guix
-          ~/.cache/guix
-        key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
