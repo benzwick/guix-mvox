@@ -82,22 +82,28 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
-    # Print environment variables to help diagnose cmake/ITK issues.
-    - name: Debug guix shell environment
-      run: guix shell -D -L . mvox -- env | sort | grep -iE 'CMAKE|GUIX|^PATH='
+    # Set up the Guix development environment for all subsequent steps.
+    # "guix shell -D" provides all build inputs (MFEM, ITK, cmake, etc.)
+    # and sets GUIX_ENVIRONMENT to the profile path. Export the search
+    # paths so we don't need to repeat "guix shell" in every step.
+    - name: Set up Guix dev environment
+      run: |
+        guix shell -D -L . mvox -- bash -c '
+          echo "GUIX_ENVIRONMENT=$GUIX_ENVIRONMENT" >> $GITHUB_ENV
+          echo "$GUIX_ENVIRONMENT/bin" >> $GITHUB_PATH
+          echo "CMAKE_PREFIX_PATH=$GUIX_ENVIRONMENT" >> $GITHUB_ENV
+          find $GUIX_ENVIRONMENT -name "ITKConfig.cmake" 2>/dev/null || echo "WARNING: ITKConfig.cmake not found"
+          ls $GUIX_ENVIRONMENT/lib/libmfem* 2>/dev/null || echo "WARNING: libmfem not found"
+        '
 
-    # guix shell -D provides all build inputs (MFEM, ITK, cmake, etc.)
-    # but does not set CMAKE_PREFIX_PATH (cmake defines it as a
-    # native-search-path, which only activates during guix build).
-    # Pass GUIX_ENVIRONMENT explicitly so cmake can find them.
     - name: Configure mvox
-      run: guix shell -D -L . mvox -- bash -c 'cmake -B build -S mvox-src -DCMAKE_PREFIX_PATH="$GUIX_ENVIRONMENT"'
+      run: cmake -B build -S mvox-src
 
     - name: Build mvox
-      run: guix shell -D -L . mvox -- make -C build -j$(nproc)
+      run: make -C build -j$(nproc)
 
     - name: Install mvox
-      run: guix shell -D -L . mvox -- sudo cmake --install build
+      run: sudo cmake --install build
 
     - name: Smoke test (installed)
       run: mvox --help || test $? -eq 1
