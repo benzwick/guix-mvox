@@ -8,54 +8,45 @@ This [Guix channel](https://guix.gnu.org/manual/en/html_node/Channels.html)
 provides packages for [MFEM](https://mfem.org) and
 [MVox](https://github.com/benzwick/mvox).
 
-## Packages
-
 | Package | Version | Description |
 |---------|---------|-------------|
 | `mfem`  | 4.5.2   | Finite element methods library (shared, zlib, exceptions; no MPI) |
 | `mvox`  | 1.0.0   | Mesh voxelizer for MFEM meshes (depends on MFEM and ITK) |
 
-## Usage
+## Installing MVox
 
-### Add the channel
-
-Add the following to `~/.config/guix/channels.scm`:
+Add the channel to `~/.config/guix/channels.scm`:
 
 ```scheme
 (cons (channel
        (name 'mvox)
        (url "https://github.com/benzwick/guix-mvox")
-       (branch "main")
-       (introduction
-        ;; TODO: add channel introduction for authentication
-        ))
+       (branch "main"))
       %default-channels)
 ```
 
-Then pull:
+Then pull and install:
 
-```sh
-guix pull
-```
+    guix pull
+    guix install mvox
+    mvox --help
 
-### Build packages
+## Building MVox from source
 
-```sh
-guix build mfem
-guix build mvox
-```
+The channel can also provide build dependencies for
+building [MVox](https://github.com/benzwick/mvox) from source.
 
-### Install MVox
+If the channel is already configured:
 
-```sh
-guix install mvox
-```
+    guix shell -D mvox
 
-### Smoke test
+Or from a local checkout of this repository:
 
-```sh
-mvox --help
-```
+    guix shell -D -L /path/to/guix-mvox mvox
+
+This provides a development shell with MFEM, ITK, and all build tools.
+See the [MVox README](https://github.com/benzwick/mvox#building-from-source)
+for build instructions.
 
 ## Development
 
