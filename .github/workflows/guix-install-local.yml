@@ -1,5 +1,10 @@
 name: Guix Install (local)
 
+# Test that the package definitions in this repo build and install correctly.
+# Uses "guix build -L ." and "guix install -L ." to load the local
+# package definitions directly, without going through the channel.
+# This is the fastest way to test changes before pushing them.
+
 on:
   push:
     branches: [ "main" ]
@@ -40,13 +45,10 @@ jobs:
         key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
         restore-keys: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-
 
-    # The apt package ships an older Guix; update to latest so it can
-    # build current packages and compile channel modules.
-    # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
     # Guix migrated from git.guix.gnu.org to Codeberg; the new URL
     # requires an explicit introduction for channel authentication.
     # https://guix.gnu.org/blog/2025/migrating-to-codeberg/
-    - name: Update Guix
+    - name: Configure channels
       run: |
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
@@ -60,6 +62,12 @@ jobs:
                     (openpgp-fingerprint
                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))
         EOF
+
+    # The apt package ships an older Guix; update to latest so it can
+    # build current packages and compile channel modules.
+    # https://guix.gnu.org/manual/en/html_node/Upgrading-Guix.html
+    - name: Update Guix
+      run: |
         guix pull
         echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
 
@@ -82,7 +90,7 @@ jobs:
     # guix install puts binaries in ~/.guix-profile/bin. On a normal
     # system, sourcing ~/.guix-profile/etc/profile adds it to PATH.
     # GitHub Actions steps run non-login shells, so add it explicitly.
-    # https://guix.gnu.org/manual/1.5.0/en/html_node/Getting-Started.html
+    # https://guix.gnu.org/manual/en/html_node/Getting-Started.html
     - name: Add Guix profile to PATH
       run: echo "$HOME/.guix-profile/bin" >> $GITHUB_PATH
 

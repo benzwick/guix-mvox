@@ -1,5 +1,9 @@
 name: Guix Build from Source
 
+# Test building mvox from source using Guix for dependencies.
+# Uses "guix shell -D" to provide build inputs (MFEM, ITK, cmake, etc.)
+# then builds mvox with cmake and make, as a developer would.
+
 on:
   push:
     branches: [ "main" ]
@@ -40,13 +44,10 @@ jobs:
         key: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-${{ github.run_number }}
         restore-keys: guix-${{ matrix.os }}-${{ steps.cache-key.outputs.week }}-
 
-    # The apt package ships an older Guix; update to latest so it can
-    # build current packages and compile channel modules.
-    # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
     # Guix migrated from git.guix.gnu.org to Codeberg; the new URL
     # requires an explicit introduction for channel authentication.
     # https://guix.gnu.org/blog/2025/migrating-to-codeberg/
-    - name: Update Guix
+    - name: Configure channels
       run: |
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
@@ -60,8 +61,18 @@ jobs:
                     (openpgp-fingerprint
                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA")))))
         EOF
+
+    # The apt package ships an older Guix; update to latest so it can
+    # build current packages and compile channel modules.
+    # https://guix.gnu.org/manual/en/html_node/Upgrading-Guix.html
+    - name: Update Guix
+      run: |
         guix pull
         echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
+
+    - name: Lint packages
+      continue-on-error: true
+      run: guix lint -L . mfem mvox
 
     - name: Clone mvox
       uses: actions/checkout@v4
@@ -69,29 +80,33 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
+    # Print environment variables to help diagnose cmake/ITK issues.
     - name: Debug guix shell environment
       run: guix shell -D -L . mvox -- env | sort | grep -iE 'CMAKE|GUIX|^PATH='
 
-    # guix shell -D sets GUIX_ENVIRONMENT to the profile containing all
-    # build inputs, but does not set CMAKE_PREFIX_PATH (cmake defines it
-    # as a native-search-path, which only activates during guix build).
-    # Pass it explicitly so cmake can find ITK and MFEM.
+    # guix shell -D provides all build inputs (MFEM, ITK, cmake, etc.)
+    # but does not set CMAKE_PREFIX_PATH (cmake defines it as a
+    # native-search-path, which only activates during guix build).
+    # Pass GUIX_ENVIRONMENT explicitly so cmake can find them.
     - name: Configure mvox
       run: guix shell -D -L . mvox -- bash -c 'cmake -B build -S mvox-src -DCMAKE_PREFIX_PATH="$GUIX_ENVIRONMENT"'
 
     - name: Build mvox
       run: guix shell -D -L . mvox -- make -C build -j$(nproc)
 
-    - name: Smoke test
-      run: guix shell -D -L . mvox -- ./build/mvox --help || test $? -eq 1
+    - name: Install mvox
+      run: guix shell -D -L . mvox -- sudo cmake --install build
+
+    - name: Smoke test (installed)
+      run: mvox --help || test $? -eq 1
 
     - name: Test boxmesh
       working-directory: mvox-src/examples
-      run: guix shell -D -L "$GITHUB_WORKSPACE" mvox -- bash boxmesh.sh
+      run: bash boxmesh.sh
 
     - name: Test brain-tensors
       working-directory: mvox-src/examples
-      run: guix shell -D -L "$GITHUB_WORKSPACE" mvox -- bash brain-tensors.sh
+      run: bash brain-tensors.sh
 
     - name: Collect Guix build logs
       if: always()

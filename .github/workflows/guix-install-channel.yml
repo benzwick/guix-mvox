@@ -1,5 +1,10 @@
 name: Guix Install (channel)
 
+# Test the end-user channel install flow.
+# Configures the mvox channel in channels.scm, runs "guix pull" to
+# fetch channel definitions, then installs mvox with "guix install".
+# This verifies that the channel works as documented in the README.
+
 on:
   push:
     branches: [ "main" ]
@@ -39,7 +44,7 @@ jobs:
     # Guix migrated from git.guix.gnu.org to Codeberg; the new URL
     # requires an explicit introduction for channel authentication.
     # https://guix.gnu.org/blog/2025/migrating-to-codeberg/
-    - name: Configure channel
+    - name: Configure channels
       run: |
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
@@ -59,12 +64,17 @@ jobs:
                %default-channels)
         EOF
 
-    # guix pull updates Guix itself and pulls the mvox channel.
-    # Add the updated guix to PATH for subsequent steps.
-    - name: Pull
+    # The apt package ships an older Guix; update to latest so it can
+    # build current packages and compile channel modules.
+    # https://guix.gnu.org/manual/en/html_node/Upgrading-Guix.html
+    - name: Update Guix
       run: |
         guix pull
         echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
+
+    - name: Lint packages
+      continue-on-error: true
+      run: guix lint mfem mvox
 
     - name: Install mvox
       run: guix install mvox
@@ -72,11 +82,11 @@ jobs:
     # guix install puts binaries in ~/.guix-profile/bin. On a normal
     # system, sourcing ~/.guix-profile/etc/profile adds it to PATH.
     # GitHub Actions steps run non-login shells, so add it explicitly.
-    # https://guix.gnu.org/manual/1.5.0/en/html_node/Getting-Started.html
+    # https://guix.gnu.org/manual/en/html_node/Getting-Started.html
     - name: Add Guix profile to PATH
       run: echo "$HOME/.guix-profile/bin" >> $GITHUB_PATH
 
-    - name: Smoke test
+    - name: Smoke test (installed)
       run: mvox --help || test $? -eq 1
 
     - name: Clone mvox for tests
