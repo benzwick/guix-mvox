@@ -81,15 +81,15 @@ To use both channels together, combine them in
 `~/.config/guix/channels.scm`:
 
 ```scheme
-(list (channel
-        (name 'systole)
-        (url "https://github.com/SystoleOS/guix-systole.git")
-        (branch "main"))
-      (channel
-        (name 'mvox)
-        (url "https://github.com/benzwick/guix-mvox")
-        (branch "main"))
-      %default-channels)
+(cons* (channel
+         (name 'systole)
+         (url "https://github.com/SystoleOS/guix-systole.git")
+         (branch "main"))
+       (channel
+         (name 'mvox)
+         (url "https://github.com/benzwick/guix-mvox")
+         (branch "main"))
+       %default-channels)
 ```
 
 A `slicer-mvox` package would build the MVox loadable module against Slicer's
