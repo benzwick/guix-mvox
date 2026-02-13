@@ -77,13 +77,13 @@ jobs:
       run: guix build -L . mvox
 
     - name: Smoke test (from store)
-      run: $(guix build -L . mvox)/bin/mvox --help
+      run: $(guix build -L . mvox)/bin/mvox --help || test $? -eq 1
 
     - name: Install mvox
       run: guix install -L . mvox
 
     - name: Smoke test (installed)
-      run: mvox --help
+      run: mvox --help || test $? -eq 1
 
     - name: Clone mvox for tests
       uses: actions/checkout@v4

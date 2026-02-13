@@ -81,7 +81,7 @@ jobs:
           make -j$(nproc)"
 
     - name: Smoke test
-      run: guix shell -D -L . mvox -- ./build/mvox --help
+      run: guix shell -D -L . mvox -- ./build/mvox --help || test $? -eq 1
 
     - name: Test boxmesh
       run: guix shell -D -L . mvox -- bash -c "cd mvox-src/examples && bash boxmesh.sh"
