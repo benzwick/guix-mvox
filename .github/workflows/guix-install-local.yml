@@ -63,8 +63,13 @@ jobs:
         sudo /var/guix/profiles/per-user/root/current-guix/bin/guix-daemon \
           --build-users-group=guixbuild --disable-chroot &
 
+    # The tarball ships a potentially old Guix; update the daemon so it
+    # can build current packages and compile channel modules.
+    # Use $(which guix) because sudo resets PATH.
     - name: Update Guix
-      run: sudo -i /var/guix/profiles/per-user/root/current-guix/bin/guix pull
+      run: |
+        echo "guix=$(which guix)"
+        sudo "$(which guix)" pull
 
     - name: Lint packages
       continue-on-error: true
