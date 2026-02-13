@@ -77,24 +77,22 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
-    - name: Build mvox from source
-      run: |
-        guix shell -D -L . mvox -- bash -c "\
-          echo GUIX_ENVIRONMENT=\$GUIX_ENVIRONMENT && \
-          echo CMAKE_PREFIX_PATH=\$CMAKE_PREFIX_PATH && \
-          mkdir -p build && \
-          cd build && \
-          cmake ../mvox-src && \
-          make -j$(nproc)"
+    - name: Configure mvox
+      run: guix shell -D -L . mvox -- cmake -B build -S mvox-src
+
+    - name: Build mvox
+      run: guix shell -D -L . mvox -- make -C build -j$(nproc)
 
     - name: Smoke test
       run: guix shell -D -L . mvox -- ./build/mvox --help || test $? -eq 1
 
     - name: Test boxmesh
-      run: guix shell -D -L . mvox -- bash -c "cd mvox-src/examples && bash boxmesh.sh"
+      working-directory: mvox-src/examples
+      run: guix shell -D -L "$GITHUB_WORKSPACE" mvox -- bash boxmesh.sh
 
     - name: Test brain-tensors
-      run: guix shell -D -L . mvox -- bash -c "cd mvox-src/examples && bash brain-tensors.sh"
+      working-directory: mvox-src/examples
+      run: guix shell -D -L "$GITHUB_WORKSPACE" mvox -- bash brain-tensors.sh
 
     - name: Save Guix store cache
       uses: actions/cache/save@v4
