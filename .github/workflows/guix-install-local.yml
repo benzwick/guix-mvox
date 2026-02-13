@@ -104,6 +104,10 @@ jobs:
       working-directory: mvox-src/examples
       run: bash brain-tensors.sh
 
+    - name: Stop Guix daemon
+      if: always()
+      run: sudo pkill guix-daemon || true
+
     - name: Save Guix store cache
       uses: actions/cache/save@v4
       if: always()
