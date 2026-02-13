@@ -1,9 +1,10 @@
-name: Guix Install (local)
+name: Guix Shell
 
-# Test that the package definitions in this repo build and install correctly.
-# Uses "guix build -L ." and "guix install -L ." to load the local
-# package definitions directly, without going through the channel.
-# This is the fastest way to test changes before pushing them.
+# Build mvox from source inside a Guix development environment.
+#
+# Runs "guix shell -D mvox" to provide all build dependencies
+# (MFEM, ITK, cmake, etc.), then builds with cmake and make.
+# This is how a developer would build mvox locally.
 
 on:
   push:
@@ -75,33 +76,31 @@ jobs:
       continue-on-error: true
       run: guix lint -L . mfem mvox
 
-    - name: Build MFEM
-      run: guix build -L . mfem
-
-    - name: Build mvox
-      run: guix build -L . mvox
-
-    - name: Smoke test (from store)
-      run: $(guix build -L . mvox)/bin/mvox --help || test $? -eq 1
-
-    - name: Install mvox
-      run: guix install -L . mvox
-
-    # guix install puts binaries in ~/.guix-profile/bin. On a normal
-    # system, sourcing ~/.guix-profile/etc/profile adds it to PATH.
-    # GitHub Actions steps run non-login shells, so add it explicitly.
-    # https://guix.gnu.org/manual/en/html_node/Getting-Started.html
-    - name: Add Guix profile to PATH
-      run: echo "$HOME/.guix-profile/bin" >> $GITHUB_PATH
-
-    - name: Smoke test (installed)
-      run: mvox --help || test $? -eq 1
-
-    - name: Clone mvox for tests
+    - name: Clone mvox
       uses: actions/checkout@v4
       with:
         repository: benzwick/mvox
         path: mvox-src
+
+    # Print environment variables to help diagnose cmake/ITK issues.
+    - name: Debug guix shell environment
+      run: guix shell -D -L . mvox -- env | sort | grep -iE 'CMAKE|GUIX|^PATH='
+
+    # guix shell -D provides all build inputs (MFEM, ITK, cmake, etc.)
+    # but does not set CMAKE_PREFIX_PATH (cmake defines it as a
+    # native-search-path, which only activates during guix build).
+    # Pass GUIX_ENVIRONMENT explicitly so cmake can find them.
+    - name: Configure mvox
+      run: guix shell -D -L . mvox -- bash -c 'cmake -B build -S mvox-src -DCMAKE_PREFIX_PATH="$GUIX_ENVIRONMENT"'
+
+    - name: Build mvox
+      run: guix shell -D -L . mvox -- make -C build -j$(nproc)
+
+    - name: Install mvox
+      run: guix shell -D -L . mvox -- sudo cmake --install build
+
+    - name: Smoke test (installed)
+      run: mvox --help || test $? -eq 1
 
     - name: Test boxmesh
       working-directory: mvox-src/examples

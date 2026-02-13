@@ -1,9 +1,10 @@
-name: Guix Install (channel)
+name: Guix Channel
 
-# Test the end-user channel install flow.
+# Install mvox through the Guix channel, as an end user would.
+#
 # Configures the mvox channel in channels.scm, runs "guix pull" to
-# fetch channel definitions, then installs mvox with "guix install".
-# This verifies that the channel works as documented in the README.
+# fetch the channel, then installs mvox with "guix install mvox".
+# This verifies that the published channel works correctly.
 
 on:
   push:
