@@ -75,6 +75,8 @@ jobs:
     - name: Build mvox from source
       run: |
         guix shell -D -L . mvox -- bash -c "\
+          echo GUIX_ENVIRONMENT=\$GUIX_ENVIRONMENT && \
+          echo CMAKE_PREFIX_PATH=\$CMAKE_PREFIX_PATH && \
           mkdir -p build && \
           cd build && \
           cmake ../mvox-src && \
