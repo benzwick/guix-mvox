@@ -84,6 +84,13 @@ jobs:
     - name: Install mvox
       run: guix install mvox
 
+    # guix install puts binaries in ~/.guix-profile/bin. On a normal
+    # system, sourcing ~/.guix-profile/etc/profile adds it to PATH.
+    # GitHub Actions steps run non-login shells, so add it explicitly.
+    # https://guix.gnu.org/manual/1.5.0/en/html_node/Getting-Started.html
+    - name: Add Guix profile to PATH
+      run: echo "$HOME/.guix-profile/bin" >> $GITHUB_PATH
+
     - name: Smoke test
       run: mvox --help || test $? -eq 1
 
