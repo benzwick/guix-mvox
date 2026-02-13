@@ -65,11 +65,11 @@ jobs:
 
     # The tarball ships a potentially old Guix; update the daemon so it
     # can build current packages and compile channel modules.
-    # Use $(which guix) because sudo resets PATH.
+    # Use sudo -i (login shell) so guix pull writes to /root and does
+    # not create root-owned files in $HOME.
+    # https://guix.gnu.org/manual/1.5.0/en/html_node/Upgrading-Guix.html
     - name: Update Guix
-      run: |
-        echo "guix=$(which guix)"
-        sudo "$(which guix)" pull
+      run: sudo -i guix pull
 
     - name: Lint packages
       continue-on-error: true
