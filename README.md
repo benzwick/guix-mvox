@@ -33,20 +33,58 @@ Then pull and install:
 
 ## Building MVox from source
 
-The channel can also provide build dependencies for
-building [MVox](https://github.com/benzwick/mvox) from source.
+The channel can also provide build dependencies for building
+[MVox](https://github.com/benzwick/mvox) from source.
+See the [MVox README](https://github.com/benzwick/mvox#building-from-source)
+for the latest build instructions and dependencies.
 
 If the channel is already configured:
 
-    guix shell -D mvox
+    guix shell --container -D mvox
 
 Or from a local checkout of this repository:
 
-    guix shell -D -L /path/to/guix-mvox mvox
+    guix shell --container -L /path/to/guix-mvox -D mvox
 
-This provides a development shell with MFEM, ITK, and all build tools.
-See the [MVox README](https://github.com/benzwick/mvox#building-from-source)
-for build instructions.
+The `--container` flag creates an
+[isolated environment](https://guix.gnu.org/manual/en/html_node/Invoking-guix-shell.html)
+so that only Guix-provided packages are visible,
+preventing conflicts with system-installed libraries.
+The container shares the current working directory with the host,
+so run the command from a parent directory
+that contains both the channel and the source tree.
+
+The `-D` flag includes the dependencies of "the following package",
+so it must come immediately before the package name.
+When using `-L`, put it before `-D`.
+
+### Example
+
+Clone both repositories and start the shell from the parent directory
+so that both are visible inside the container:
+
+```sh
+cd ~/projects/mvox
+git clone https://github.com/benzwick/guix-mvox.git
+git clone https://github.com/benzwick/mvox.git
+guix shell --container -L guix-mvox -D mvox
+```
+
+Inside the container, the working directory is `~/projects/mvox`.
+Build with cmake and make:
+
+```sh
+cd mvox
+cmake -B build
+make -C build -j$(nproc)
+./build/mvox --help
+```
+
+The [Guix Shell CI workflow](.github/workflows/guix-shell.yml)
+demonstrates the full build and test process.
+The CI runs each step with `guix shell -L . -D mvox --`
+rather than an interactive container because GitHub Actions steps
+run independently and cannot share a persistent shell session.
 
 ## Development
 

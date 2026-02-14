@@ -68,39 +68,27 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
-    # Set up the Guix development environment for all subsequent steps.
-    # "guix shell -D" provides all build inputs (MFEM, ITK, cmake, etc.)
-    # and sets GUIX_ENVIRONMENT to the profile path. Export the search
-    # paths so we don't need to repeat "guix shell" in every step.
-    - name: Set up Guix dev environment
-      run: |
-        guix shell -D -L . mvox -- bash -c '
-          echo "GUIX_ENVIRONMENT=$GUIX_ENVIRONMENT" >> $GITHUB_ENV
-          echo "$GUIX_ENVIRONMENT/bin" >> $GITHUB_PATH
-          echo "CMAKE_PREFIX_PATH=$GUIX_ENVIRONMENT" >> $GITHUB_ENV
-          find $GUIX_ENVIRONMENT -name "ITKConfig.cmake" 2>/dev/null || echo "WARNING: ITKConfig.cmake not found"
-          ls $GUIX_ENVIRONMENT/lib/libmfem* 2>/dev/null || echo "WARNING: libmfem not found"
-        '
-
+    # Each build step runs inside "guix shell -D" so that all search
+    # paths (CMAKE_PREFIX_PATH, LIBRARY_PATH, etc.) are set correctly.
+    # The store is populated on the first invocation; subsequent calls
+    # reuse the cached profile and are fast.
     - name: Configure mvox
-      run: cmake -B build -S mvox-src
+      run: guix shell -L . -D mvox -- cmake -B build -S mvox-src
 
     - name: Build mvox
-      run: make -C build -j$(nproc)
+      run: guix shell -L . -D mvox -- make -C build -j$(nproc)
 
     - name: Install mvox
-      run: sudo cmake --install build
+      run: guix shell -L . -D mvox -- sudo cmake --install build
 
     - name: Smoke test (installed)
-      run: mvox --help || test $? -eq 1
+      run: guix shell -L . -D mvox -- bash -c 'mvox --help || test $? -eq 1'
 
     - name: Test boxmesh
-      working-directory: mvox-src/examples
-      run: bash boxmesh.sh
+      run: guix shell -L . -D mvox -- bash -c 'cd mvox-src/examples && bash boxmesh.sh'
 
     - name: Test brain-tensors
-      working-directory: mvox-src/examples
-      run: bash brain-tensors.sh
+      run: guix shell -L . -D mvox -- bash -c 'cd mvox-src/examples && bash brain-tensors.sh'
 
     - name: Collect Guix build logs
       if: always()
