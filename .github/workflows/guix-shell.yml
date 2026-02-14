@@ -68,27 +68,28 @@ jobs:
         repository: benzwick/mvox
         path: mvox-src
 
-    # Each build step runs inside "guix shell -D" so that all search
-    # paths (CMAKE_PREFIX_PATH, LIBRARY_PATH, etc.) are set correctly.
-    # The store is populated on the first invocation; subsequent calls
-    # reuse the cached profile and are fast.
+    # Each build step runs inside "guix shell --pure -D" so that all
+    # search paths (CMAKE_PREFIX_PATH, LIBRARY_PATH, etc.) are set
+    # correctly and system paths don't interfere. The store is populated
+    # on the first invocation; subsequent calls reuse the cached profile
+    # and are fast.
     - name: Configure mvox
-      run: guix shell -L . -D mvox -- cmake -B build -S mvox-src
+      run: guix shell --pure -L . -D mvox -- cmake -B build -S mvox-src
 
     - name: Build mvox
-      run: guix shell -L . -D mvox -- make -C build -j$(nproc)
+      run: guix shell --pure -L . -D mvox -- make -C build -j$(nproc)
 
     - name: Install mvox
-      run: guix shell -L . -D mvox -- sudo cmake --install build
+      run: guix shell --pure -L . -D mvox -- sudo cmake --install build
 
     - name: Smoke test (installed)
-      run: guix shell -L . -D mvox -- bash -c 'mvox --help || test $? -eq 1'
+      run: guix shell --pure -L . -D mvox -- bash -c 'mvox --help || test $? -eq 1'
 
     - name: Test boxmesh
-      run: guix shell -L . -D mvox -- bash -c 'cd mvox-src/examples && bash boxmesh.sh'
+      run: guix shell --pure -L . -D mvox -- bash -c 'cd mvox-src/examples && bash boxmesh.sh'
 
     - name: Test brain-tensors
-      run: guix shell -L . -D mvox -- bash -c 'cd mvox-src/examples && bash brain-tensors.sh'
+      run: guix shell --pure -L . -D mvox -- bash -c 'cd mvox-src/examples && bash brain-tensors.sh'
 
     - name: Collect Guix build logs
       if: always()
