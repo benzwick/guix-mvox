@@ -73,8 +73,13 @@ jobs:
     # correctly and system paths don't interfere. The store is populated
     # on the first invocation; subsequent calls reuse the cached profile
     # and are fast.
+    # CMAKE_INSTALL_RPATH_USE_LINK_PATH preserves Guix store library
+    # paths in installed binaries. Without this, cmake strips rpath on
+    # install and the binary cannot find shared libraries. Guix's own
+    # cmake-build-system handles this via its fix-runpath phase, but
+    # that phase is not available when building manually in guix shell.
     - name: Configure mvox
-      run: guix shell --pure -L . -D mvox -- cmake -B build -S mvox-src
+      run: guix shell --pure -L . -D mvox -- cmake -B build -S mvox-src -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
 
     - name: Build mvox
       run: guix shell --pure -L . -D mvox -- make -C build -j$(nproc)
