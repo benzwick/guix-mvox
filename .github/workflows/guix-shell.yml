@@ -90,11 +90,13 @@ jobs:
     - name: Smoke test (installed)
       run: guix shell --pure -L . -D mvox -- bash -c './install/bin/mvox --help || test $? -eq 1'
 
+    # The example scripts use wget and expect mvox on PATH.
+    # Add wget to the shell and prepend the local install prefix.
     - name: Test boxmesh
-      run: guix shell --pure -L . -D mvox -- bash -c 'cd mvox-src/examples && bash boxmesh.sh'
+      run: guix shell --pure -L . -D mvox wget -- bash -c 'export PATH=$PWD/install/bin:$PATH && cd mvox-src/examples && bash boxmesh.sh'
 
     - name: Test brain-tensors
-      run: guix shell --pure -L . -D mvox -- bash -c 'cd mvox-src/examples && bash brain-tensors.sh'
+      run: guix shell --pure -L . -D mvox wget -- bash -c 'export PATH=$PWD/install/bin:$PATH && cd mvox-src/examples && bash brain-tensors.sh'
 
     - name: Collect Guix build logs
       if: always()
