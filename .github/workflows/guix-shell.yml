@@ -80,10 +80,10 @@ jobs:
       run: guix shell --pure -L . -D mvox -- make -C build -j$(nproc)
 
     - name: Install mvox
-      run: guix shell --pure -L . -D mvox -- sudo cmake --install build
+      run: guix shell --pure -L . -D mvox -- cmake --install build --prefix install
 
     - name: Smoke test (installed)
-      run: guix shell --pure -L . -D mvox -- bash -c 'mvox --help || test $? -eq 1'
+      run: guix shell --pure -L . -D mvox -- bash -c './install/bin/mvox --help || test $? -eq 1'
 
     - name: Test boxmesh
       run: guix shell --pure -L . -D mvox -- bash -c 'cd mvox-src/examples && bash boxmesh.sh'
