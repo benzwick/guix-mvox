@@ -60,15 +60,24 @@ jobs:
 
     - name: Lint packages
       continue-on-error: true
-      run: guix lint -L . mfem mvox
+      run: guix lint -L . mfem mfem-4.5 mvox mvox-mfem-4.5
 
-    - name: Build MFEM
+    - name: Build MFEM 4.5
+      run: guix build -L . mfem@4.5
+
+    - name: Build MFEM 4.9
       run: guix build -L . mfem
 
-    - name: Build mvox
+    - name: Build mvox (MFEM 4.5)
+      run: guix build -L . mvox-mfem-4.5
+
+    - name: Build mvox (MFEM 4.9)
       run: guix build -L . mvox
 
-    - name: Smoke test (from store)
+    - name: Smoke test mvox (MFEM 4.5)
+      run: $(guix build -L . mvox-mfem-4.5)/bin/mvox --help || test $? -eq 1
+
+    - name: Smoke test mvox (MFEM 4.9)
       run: $(guix build -L . mvox)/bin/mvox --help || test $? -eq 1
 
     - name: Install mvox

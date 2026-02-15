@@ -37,3 +37,10 @@ voxel images.  It can produce NIfTI and other medical image formats via ITK,
 enabling interoperability between finite element simulations and medical
 imaging tools such as 3D Slicer.")
     (license license:bsd-3)))
+
+(define-public mvox-mfem-4.5
+  (package
+    (inherit mvox)
+    (name "mvox-mfem-4.5")
+    (inputs (modify-inputs (package-inputs mvox)
+              (replace "mfem" mfem-4.5)))))

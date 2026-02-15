@@ -8,10 +8,12 @@ This [Guix channel](https://guix.gnu.org/manual/en/html_node/Channels.html)
 provides packages for [MFEM](https://mfem.org) and
 [MVox](https://github.com/benzwick/mvox).
 
-| Package | Version | Description |
-|---------|---------|-------------|
-| `mfem`  | 4.5.2   | Finite element methods library (shared, zlib, exceptions; no MPI) |
-| `mvox`  | 1.0.0   | Mesh voxelizer for MFEM meshes (depends on MFEM and ITK) |
+| Package         | Version | Description |
+|-----------------|---------|-------------|
+| `mfem`          | 4.9     | Finite element methods library (shared, zlib, exceptions; no MPI) |
+| `mfem@4.5`      | 4.5.2   | Finite element methods library (previous version) |
+| `mvox`          | 1.0.0   | Mesh voxelizer for MFEM meshes (built against MFEM 4.9) |
+| `mvox-mfem-4.5` | 1.0.0   | Mesh voxelizer for MFEM meshes (built against MFEM 4.5) |
 
 ## Installing MVox
 

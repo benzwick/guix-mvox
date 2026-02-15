@@ -60,7 +60,7 @@ jobs:
 
     - name: Lint packages
       continue-on-error: true
-      run: guix lint -L . mfem mvox
+      run: guix lint -L . mfem mfem-4.5 mvox mvox-mfem-4.5
 
     - name: Clone mvox
       uses: actions/checkout@v4
