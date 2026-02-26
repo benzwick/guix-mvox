@@ -1,0 +1,86 @@
+name: Guix Slicer
+
+# Build the full 3D Slicer stack with MVox using both channels.
+#
+# This is a slow build (Slicer has a large dependency tree), so it
+# only runs on a weekly schedule and manual dispatch.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Guix
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y guix
+        echo "LANG=en_US.utf8" >> $GITHUB_ENV
+
+    - name: Configure channels
+      run: |
+        mkdir -p ~/.config/guix
+        cat > ~/.config/guix/channels.scm << 'EOF'
+        (cons* (channel
+                 (name 'guix)
+                 (url "https://codeberg.org/guix/guix.git")
+                 (branch "master")
+                 (introduction
+                   (make-channel-introduction
+                     "9edb3f66fd807b096b48283debdcddccfea34bad"
+                     (openpgp-fingerprint
+                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
+               (channel
+                 (name 'mvox)
+                 (url "file:///home/runner/work/guix-mvox/guix-mvox")
+                 (branch "main"))
+               (channel
+                 (name 'systole)
+                 (url "https://github.com/SystoleOS/guix-systole.git")
+                 (branch "main"))
+               %default-channels)
+        EOF
+
+    - name: Update Guix
+      run: |
+        guix pull
+        echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
+
+    - name: Build Slicer
+      run: guix build slicer-5.8
+
+    - name: Install Slicer and mvox
+      run: guix install slicer-5.8 mvox
+
+    - name: Add Guix profile to PATH
+      run: echo "$HOME/.guix-profile/bin" >> $GITHUB_PATH
+
+    - name: Smoke test mvox (installed)
+      run: mvox --help || test $? -eq 1
+
+    - name: Collect Guix build logs
+      if: always()
+      run: |
+        mkdir -p guix-build-logs
+        for f in /var/log/guix/drvs/*/*; do
+          sudo cp "$f" guix-build-logs/ || true
+        done
+        gunzip guix-build-logs/*.gz 2>/dev/null || true
+
+    - name: Upload Guix build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: guix-build-logs
+        path: guix-build-logs/
+
+    - name: Stop Guix daemon
+      if: always()
+      run: sudo systemctl stop guix-daemon
