@@ -62,7 +62,7 @@ jobs:
 
     - name: Lint packages
       continue-on-error: true
-      run: guix lint mfem mfem-4.5 mvox mvox-mfem-4.5
+      run: guix lint mfem mfem@4.5 mvox mvox-mfem-4.5
 
     - name: Install mvox
       run: guix install mvox
