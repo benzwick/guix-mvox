@@ -18,6 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
+    # Ensure a local "main" branch exists for the file:// channel URL.
+    # On manual dispatch from a non-main branch, actions/checkout may
+    # not create a local "main" branch, causing guix pull to fail.
+    - name: Create main branch for local channel
+      run: git branch -f main HEAD
+
     - name: Install Guix
       run: |
         sudo apt-get update

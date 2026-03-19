@@ -23,6 +23,12 @@ jobs:
     steps:
     - uses: actions/checkout@v5
 
+    # Ensure a local "main" branch exists for the file:// channel URL.
+    # On pull requests, actions/checkout creates a detached HEAD at the
+    # merge ref without a "main" branch, causing guix pull to fail.
+    - name: Create main branch for local channel
+      run: git branch -f main HEAD
+
     - name: Install Guix
       run: |
         sudo apt-get update
