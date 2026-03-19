@@ -79,6 +79,12 @@ jobs:
     # install and the binary cannot find shared libraries. Guix's own
     # cmake-build-system handles this via its fix-runpath phase, but
     # that phase is not available when building manually in guix shell.
+    # Build the shell profile (MFEM, ITK, cmake, etc.) in a separate
+    # step so that dependency build failures are not conflated with
+    # cmake configuration errors.
+    - name: Build shell environment
+      run: guix shell --pure -L . -D mvox -- true
+
     - name: Configure mvox
       run: guix shell --pure -L . -D mvox -- cmake -B build -S mvox-src -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=ON
 
