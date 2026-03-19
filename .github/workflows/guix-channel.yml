@@ -36,20 +36,19 @@ jobs:
       run: |
         mkdir -p ~/.config/guix
         cat > ~/.config/guix/channels.scm << 'EOF'
-        (cons* (channel
-                 (name 'guix)
-                 (url "https://codeberg.org/guix/guix.git")
-                 (branch "master")
-                 (introduction
-                   (make-channel-introduction
-                     "9edb3f66fd807b096b48283debdcddccfea34bad"
-                     (openpgp-fingerprint
-                       "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
-               (channel
-                 (name 'mvox)
-                 (url "https://github.com/benzwick/guix-mvox")
-                 (branch "main"))
-               %default-channels)
+        (list (channel
+                (name 'guix)
+                (url "https://codeberg.org/guix/guix.git")
+                (branch "master")
+                (introduction
+                  (make-channel-introduction
+                    "9edb3f66fd807b096b48283debdcddccfea34bad"
+                    (openpgp-fingerprint
+                      "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
+              (channel
+                (name 'mvox)
+                (url "https://github.com/benzwick/guix-mvox")
+                (branch "main")))
         EOF
 
     # The apt package ships an older Guix; update to latest so it can
@@ -64,6 +63,11 @@ jobs:
       continue-on-error: true
       run: guix lint mfem mfem@4.5 mvox mvox-mfem-4.5
 
+    - name: Build mvox
+      run: guix build mvox
+
+    # guix install applies grafts (security patches) on top of the
+    # build.  Splitting build from install isolates graft failures.
     - name: Install mvox
       run: guix install mvox
 
