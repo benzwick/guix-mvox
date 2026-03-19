@@ -33,9 +33,10 @@ Runs on: push, pull requests, weekly, manual dispatch.
 
 ## guix-slicer.yml
 
-Build the full 3D Slicer stack with MVox using both the mvox and
-systole channels. This is a slow build (Slicer has a large dependency
-tree), so it only runs on a weekly schedule and manual dispatch.
+Verify that the Slicer package resolves when both the mvox and
+systole channels are present. Uses `--dry-run` to validate the
+dependency graph without compiling (the full Slicer build is too
+large for GitHub Actions runners).
 
 Runs on: weekly, manual dispatch.
 
