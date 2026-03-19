@@ -27,7 +27,7 @@ jobs:
     # On pull requests, actions/checkout creates a detached HEAD at the
     # merge ref without a "main" branch, causing guix pull to fail.
     - name: Create main branch for local channel
-      run: git branch -f main HEAD
+      run: git branch -f main HEAD 2>/dev/null || true
 
     - name: Install Guix
       run: |
