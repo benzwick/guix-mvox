@@ -25,7 +25,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-latest]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Install Guix
       run: |
@@ -64,7 +64,7 @@ jobs:
       run: guix lint -L . mfem mfem@4.5 mvox mvox-mfem-4.5
 
     - name: Clone mvox
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: benzwick/mvox
         path: mvox-src
@@ -110,7 +110,7 @@ jobs:
 
     - name: Upload Guix build logs
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: guix-build-logs-${{ matrix.os }}
         path: guix-build-logs/

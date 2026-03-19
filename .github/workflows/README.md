@@ -1,6 +1,6 @@
 # CI Workflows
 
-Three workflows test the different ways to build and install mvox with Guix.
+Five workflows test the different ways to build and install mvox with Guix.
 Each mirrors a real user workflow and serves as executable documentation.
 
 ## guix-build.yml
@@ -28,5 +28,23 @@ Build mvox from source inside a Guix development environment.
 Runs `guix shell -D mvox` to provide all build dependencies
 (MFEM, ITK, cmake, etc.), then builds with cmake and make.
 This is how a developer would build mvox locally.
+
+Runs on: push, pull requests, weekly, manual dispatch.
+
+## guix-slicer.yml
+
+Verify that the Slicer package resolves when both the mvox and
+systole channels are present. Uses `--dry-run` to validate the
+dependency graph without compiling (the full Slicer build is too
+large for GitHub Actions runners).
+
+Runs on: weekly, manual dispatch.
+
+## guix-systole.yml
+
+Test that guix-mvox composes correctly with guix-systole.
+Users building a 3D Slicer custom application with MVox need both
+channels. This workflow verifies that mvox builds and works when
+the systole channel is present.
 
 Runs on: push, pull requests, weekly, manual dispatch.

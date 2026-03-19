@@ -21,7 +21,13 @@ jobs:
     timeout-minutes: 120
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
+
+    # Ensure a local "main" branch exists for the file:// channel URL.
+    # On pull requests, actions/checkout creates a detached HEAD at the
+    # merge ref without a "main" branch, causing guix pull to fail.
+    - name: Create main branch for local channel
+      run: git branch -f main HEAD
 
     - name: Install Guix
       run: |
@@ -91,7 +97,7 @@ jobs:
 
     - name: Upload Guix build logs
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: guix-build-logs
         path: guix-build-logs/
