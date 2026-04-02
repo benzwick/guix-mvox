@@ -1,8 +1,12 @@
 # MVox Guix Channel
 
+<!-- Badges ordered by scope: local build, dev shell, published channel,
+     multi-channel composition, full Slicer integration. -->
 [![Guix Build](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-build.yml)
-[![Guix Channel](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml)
 [![Guix Shell](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-shell.yml)
+[![Guix Channel](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-channel.yml)
+[![Guix Systole](https://github.com/benzwick/guix-mvox/actions/workflows/guix-systole.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-systole.yml)
+[![Guix Slicer](https://github.com/benzwick/guix-mvox/actions/workflows/guix-slicer.yml/badge.svg)](https://github.com/benzwick/guix-mvox/actions/workflows/guix-slicer.yml)
 
 This [Guix channel](https://guix.gnu.org/manual/en/html_node/Channels.html)
 provides packages for [MFEM](https://mfem.org) and
