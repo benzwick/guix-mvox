@@ -63,6 +63,14 @@ jobs:
         guix pull
         echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
 
+    # The apt-packaged guix-daemon spawns an old substitute handler
+    # whose GnuTLS can't connect to substitute servers (TLS errors).
+    # Restart the daemon with the just-pulled binary.
+    - name: Restart Guix daemon with updated guix
+      run: |
+        sudo systemctl stop guix-daemon
+        sudo $HOME/.config/guix/current/bin/guix-daemon --build-users-group=guixbuild &
+
     - name: Lint packages
       continue-on-error: true
       run: guix lint mfem mfem@4.5 mvox mvox-mfem-4.5
