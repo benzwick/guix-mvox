@@ -101,8 +101,15 @@ runs:
     # The apt-packaged guix-daemon spawns an old substitute handler
     # whose GnuTLS can't connect to substitute servers (TLS errors).
     # Restart the daemon with the just-pulled binary.
+    # Detect the build group created by the apt package (Debian uses
+    # _guixbuild, upstream uses guixbuild).
     - name: Restart Guix daemon
       shell: bash
       run: |
+        if getent group _guixbuild >/dev/null; then
+          group=_guixbuild
+        else
+          group=guixbuild
+        fi
         sudo systemctl stop guix-daemon
-        sudo $HOME/.config/guix/current/bin/guix-daemon --build-users-group=guixbuild &
+        sudo $HOME/.config/guix/current/bin/guix-daemon --build-users-group="$group" &
