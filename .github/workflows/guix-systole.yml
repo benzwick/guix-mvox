@@ -29,47 +29,17 @@ jobs:
     - name: Create main branch for local channel
       run: git branch -f main HEAD 2>/dev/null || true
 
-    - name: Install Guix
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y guix
-        echo "LANG=en_US.utf8" >> $GITHUB_ENV
-
-    - name: Configure channels
-      run: |
-        mkdir -p ~/.config/guix
-        cat > ~/.config/guix/channels.scm << 'EOF'
-        (list (channel
-                (name 'guix)
-                (url "https://codeberg.org/guix/guix.git")
-                (branch "master")
-                (introduction
-                  (make-channel-introduction
-                    "9edb3f66fd807b096b48283debdcddccfea34bad"
-                    (openpgp-fingerprint
-                      "BBB0 2DDF 2CEA F6A8 0D1D  E643 A2A0 6DF2 A33A 54FA"))))
-              (channel
-                (name 'mvox)
-                (url "file:///home/runner/work/guix-mvox/guix-mvox")
-                (branch "main"))
-              (channel
-                (name 'systole)
-                (url "https://github.com/SystoleOS/guix-systole.git")
-                (branch "main")))
-        EOF
-
-    - name: Update Guix
-      run: |
-        guix pull
-        echo "$HOME/.config/guix/current/bin" >> $GITHUB_PATH
-
-    # The apt-packaged guix-daemon spawns an old substitute handler
-    # whose GnuTLS can't connect to substitute servers (TLS errors).
-    # Restart the daemon with the just-pulled binary.
-    - name: Restart Guix daemon with updated guix
-      run: |
-        sudo systemctl stop guix-daemon
-        sudo $HOME/.config/guix/current/bin/guix-daemon --build-users-group=guixbuild &
+    - uses: ./.github/actions/setup-guix
+      with:
+        extra-channels: |
+          (channel
+            (name 'mvox)
+            (url "file:///home/runner/work/guix-mvox/guix-mvox")
+            (branch "main"))
+          (channel
+            (name 'systole)
+            (url "https://github.com/SystoleOS/guix-systole.git")
+            (branch "main"))
 
     - name: Lint packages
       continue-on-error: true
@@ -111,4 +81,4 @@ jobs:
 
     - name: Stop Guix daemon
       if: always()
-      run: sudo systemctl stop guix-daemon
+      run: sudo pkill guix-daemon || true
